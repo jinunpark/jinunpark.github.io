@@ -1,0 +1,11 @@
+<!-- _includes/header-en.html -->
+<header class="site-header">
+  <div class="site-header__inner">
+    <a class="site-title" href="{{ '/en/' | relative_url }}">{{ site.title }}</a>
+    <nav class="site-nav">
+      <a href="{{ '/en/about/' | relative_url }}">About</a>
+      <a href="{{ '/en/' | relative_url }}">Archive</a>
+      {% include lang-switcher.html %}
+    </nav>
+  </div>
+</header>

@@ -1,0 +1,36 @@
+<!-- _layouts/default-en.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% if page.title %}{{ page.title }} — {{ site.title }}{% else %}{{ site.title }}{% endif %}</title>
+  <meta name="description" content="{{ page.excerpt | default: site.description | strip_html | truncate: 160 }}">
+  <link rel="stylesheet" href="{{ '/assets/css/theme-en.css' | relative_url }}">
+
+  <!-- hreflang -->
+  {% assign current_slug = page.slug %}
+  {% assign translation = nil %}
+  {% for p in site.posts %}
+    {% if p.slug == current_slug and p.lang == "ko" %}{% assign translation = p %}{% break %}{% endif %}
+  {% endfor %}
+  {% if translation == nil %}
+    {% for p in site.pages %}
+      {% if p.slug == current_slug and p.lang == "ko" %}{% assign translation = p %}{% break %}{% endif %}
+    {% endfor %}
+  {% endif %}
+  <link rel="alternate" hreflang="en" href="{{ site.url }}{{ page.url }}">
+  {% if translation %}
+  <link rel="alternate" hreflang="ko" href="{{ site.url }}{{ translation.url }}">
+  {% endif %}
+</head>
+<body>
+  {% include header-en.html %}
+  <main class="site-main">
+    {{ content }}
+  </main>
+  <footer class="site-footer">
+    <p>© {{ 'now' | date: "%Y" }} {{ site.title }}</p>
+  </footer>
+</body>
+</html>
