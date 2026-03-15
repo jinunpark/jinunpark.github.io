@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+# hooks/pre-commit
+# Calls check-post.sh for staged post files
+
+STAGED=$(git diff --cached --name-only --diff-filter=ACM)
+POST_FILES=$(echo "$STAGED" | grep -E '^(_posts/.*\.md|about\.(ko|en)\.md)$' || true)
+
+if [ -z "$POST_FILES" ]; then
+  exit 0
+fi
+
+# Pass each file as a separate argument using xargs to handle filenames safely
+echo "$POST_FILES" | xargs bash scripts/check-post.sh
