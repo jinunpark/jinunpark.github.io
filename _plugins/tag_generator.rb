@@ -23,7 +23,15 @@ module Jekyll
       @site = site
       @base = base
       tag_slug = tag.downcase.gsub(' ', '-')
-      @dir  = "#{lang}/tags/#{tag_slug}"
+      default_lang = site.config['default_lang'] || 'ko'
+      # For the default language, polyglot outputs to _site/ directly, so we need
+      # the lang prefix in @dir to get _site/ko/tags/... For other languages,
+      # polyglot already prefixes the destination with /lang/, so we omit it.
+      @dir  = if lang == default_lang
+                "#{lang}/tags/#{tag_slug}"
+              else
+                "tags/#{tag_slug}"
+              end
       @name = 'index.html'
 
       process(@name)

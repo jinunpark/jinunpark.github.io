@@ -15,9 +15,9 @@ exclude_from_localization: ["assets", "scripts", "hooks", "docs"]
 parallel_localization: false
 
 # Posts
-# jekyll-polyglot supports :lang in permalink — it substitutes the active language.
-# This ensures /ko/ prefix appears even for the default language.
-permalink: /:lang/:year/:month/:day/:slug/
+# Each post sets an explicit permalink in its front matter with the language prefix
+# for ko (default lang) or without the prefix for en (polyglot adds /en/ automatically).
+permalink: /:year/:month/:day/:slug/
 
 # Build
 markdown: kramdown
