@@ -68,6 +68,8 @@ body {
 }
 
 .site-nav a:hover { color: var(--text); }
+.site-nav .lang-switch { color: #fff; }
+.site-nav .lang-switch:hover { color: #fff; }
 
 /* ── Language Switcher ── */
 .lang-switch {
