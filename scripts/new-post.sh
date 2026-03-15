@@ -83,6 +83,15 @@ create_post() {
     exit 1
   fi
 
+  # ko (default lang) needs explicit /ko/ prefix; en (non-default) omits it — polyglot adds /en/ automatically
+  local date_path="${DATE//-/\/}"
+  local permalink
+  if [ "$lang" = "ko" ]; then
+    permalink="/ko/${date_path}/${SLUG}/"
+  else
+    permalink="/${date_path}/${SLUG}/"
+  fi
+
   cat > "$filename" << EOF
 ---
 layout: ${layout}
@@ -91,6 +100,7 @@ title: "${TITLE}"
 date: ${DATE}
 tags: ${TAGS_YAML}
 slug: ${SLUG}
+permalink: ${permalink}
 ---
 
 EOF
