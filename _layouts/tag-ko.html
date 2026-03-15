@@ -7,11 +7,15 @@ layout: default-ko
 </div>
 
 {% assign tagged = site.posts | where: "lang", "ko" | where_exp: "p", "p.tags contains page.tag" %}
-{% for post in tagged %}
-<div class="post-card">
-  <div class="post-card__meta">
-    <time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: "%Y년 %-m월 %-d일" }}</time>
+{% if tagged.size == 0 %}
+  <p style="color: #999; font-family: var(--font-ui); font-size: 14px;">이 태그의 글이 없습니다.</p>
+{% else %}
+  {% for post in tagged %}
+  <div class="post-card">
+    <div class="post-card__meta">
+      <time datetime="{{ post.date | date: '%Y-%m-%d' }}">{{ post.date | date: "%Y년 %-m월 %-d일" }}</time>
+    </div>
+    <h2 class="post-card__title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
   </div>
-  <h2 class="post-card__title"><a href="{{ post.url | relative_url }}">{{ post.title }}</a></h2>
-</div>
-{% endfor %}
+  {% endfor %}
+{% endif %}
