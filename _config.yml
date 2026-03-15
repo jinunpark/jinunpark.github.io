@@ -10,6 +10,8 @@ languages: ["ko", "en"]
 default_lang: "ko"
 # docs/ excluded so spec/plan files don't appear in the built site
 exclude_from_localization: ["assets", "scripts", "hooks", "docs"]
+# false avoids a known jekyll-polyglot race condition on shared plugin state (e.g. tag generator).
+# Doubles build time as site grows but ensures correctness. Do not set to true.
 parallel_localization: false
 
 # Posts
