@@ -10,7 +10,8 @@ layout: default-ko
         {{ page.date | date: "%Y년 %-m월 %-d일" }}
       </time>
       {% for tag in page.tags %}
-        <a href="{{ '/ko/tags/' | append: tag | relative_url }}" class="post-card__tag">{{ tag }}</a>
+        {% assign tag_slug = tag | downcase | replace: ' ', '-' %}
+        <a href="{{ '/ko/tags/' | append: tag_slug | relative_url }}" class="post-card__tag">{{ tag }}</a>
       {% endfor %}
     </div>
   </header>
