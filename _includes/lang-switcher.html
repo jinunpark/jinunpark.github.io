@@ -1,38 +1,30 @@
 <!-- _includes/lang-switcher.html -->
-{% assign current_slug = page.slug %}
-{% assign current_lang = page.lang %}
-{% if current_lang == "en" %}
+{% if page.lang == "en" %}
   {% assign target_lang = "ko" %}
   {% assign switch_label = "한국어" %}
+  {% if page.url contains "/en/" %}
+    {% assign translation_url = page.url | replace: "/en/", "/ko/" %}
+  {% else %}
+    {% assign translation_url = nil %}
+  {% endif %}
 {% else %}
   {% assign target_lang = "en" %}
   {% assign switch_label = "English" %}
-{% endif %}
-
-{% assign translation = nil %}
-{% for p in site.posts %}
-  {% if p.slug == current_slug and p.lang == target_lang %}
-    {% assign translation = p %}
-    {% break %}
+  {% if page.url contains "/ko/" %}
+    {% assign translation_url = page.url | replace: "/ko/", "/en/" %}
+  {% else %}
+    {% assign translation_url = nil %}
   {% endif %}
-{% endfor %}
-{% if translation == nil %}
-  {% for p in site.pages %}
-    {% if p.slug == current_slug and p.lang == target_lang %}
-      {% assign translation = p %}
-      {% break %}
-    {% endif %}
-  {% endfor %}
 {% endif %}
 
-{% if translation %}
+{% if translation_url %}
   <a class="lang-switch"
-     href="{{ translation.url | relative_url }}"
+     href="{{ translation_url | relative_url }}"
      onclick="localStorage.setItem('blog_preferred_lang','{{ target_lang }}')">
     {{ switch_label }}
   </a>
 {% else %}
-  {% if current_lang == "en" %}
+  {% if page.lang == "en" %}
     {% assign disabled_title = "No translation available" %}
   {% else %}
     {% assign disabled_title = "번역이 없습니다" %}

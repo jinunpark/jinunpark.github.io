@@ -9,19 +9,10 @@
   <link rel="stylesheet" href="{{ '/assets/css/theme-ko.css' | relative_url }}">
 
   <!-- hreflang -->
-  {% assign current_slug = page.slug %}
-  {% assign translation = nil %}
-  {% for p in site.posts %}
-    {% if p.slug == current_slug and p.lang == "en" %}{% assign translation = p %}{% break %}{% endif %}
-  {% endfor %}
-  {% if translation == nil %}
-    {% for p in site.pages %}
-      {% if p.slug == current_slug and p.lang == "en" %}{% assign translation = p %}{% break %}{% endif %}
-    {% endfor %}
-  {% endif %}
   <link rel="alternate" hreflang="ko" href="{{ site.url }}{{ page.url }}">
-  {% if translation %}
-  <link rel="alternate" hreflang="en" href="{{ site.url }}{{ translation.url }}">
+  {% if page.url contains "/ko/" %}
+  {% assign en_url = page.url | replace: "/ko/", "/en/" %}
+  <link rel="alternate" hreflang="en" href="{{ site.url }}{{ en_url }}">
   {% endif %}
 </head>
 <body>
