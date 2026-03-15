@@ -5,8 +5,7 @@
     window.location.replace('/' + stored + '/');
     return;
   }
-  var lang = (navigator.language || navigator.userLanguage || 'en').toLowerCase();
-  var target = lang.startsWith('ko') ? 'ko' : 'en';
+  var target = 'ko';
   localStorage.setItem('blog_preferred_lang', target);
   window.location.replace('/' + target + '/');
 })();
