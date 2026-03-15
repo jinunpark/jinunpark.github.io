@@ -73,10 +73,10 @@ body {
 .lang-switch {
   font-size: 12px;
   font-weight: 500;
-  background: transparent;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  padding: 4px 11px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 5px 12px;
   border-radius: 4px;
   cursor: pointer;
   text-decoration: none;

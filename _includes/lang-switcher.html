@@ -4,6 +4,8 @@
   {% assign switch_label = "한국어" %}
   {% if page.url contains "/en/" %}
     {% assign translation_url = page.url | replace: "/en/", "/ko/" %}
+  {% elsif page.url == "/" %}
+    {% assign translation_url = "/ko/" %}
   {% else %}
     {% assign translation_url = nil %}
   {% endif %}
