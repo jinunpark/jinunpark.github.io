@@ -52,6 +52,7 @@ jinunpark.github.io/
 ├── hooks/                            # committed hook scripts
 │   └── pre-commit                    # calls scripts/check-post.sh
 ├── scripts/
+│   ├── new-post.sh                   # scaffold a new post with correct filename + front matter
 │   ├── check-post.sh                 # pre-commit checker
 │   └── setup-hooks.sh               # run once after clone: sets core.hooksPath
 ├── .github/
@@ -296,6 +297,52 @@ Runs on staged files in `_posts/` or matching `about.*.md`.
 | Spell check via `aspell` (skipped with warning if `aspell` not installed) | — | ✓ | — |
 
 On any failure: prints a descriptive error and exits with code 1, blocking the commit.
+
+---
+
+## New Post Script
+
+### Script: `scripts/new-post.sh`
+
+Creates a new post file (or pair of files for bilingual posts) with correct filename, front matter pre-filled, and the post opened in `$EDITOR`.
+
+**Usage:**
+```bash
+# Fully interactive
+./scripts/new-post.sh
+
+# With arguments (any omitted field falls back to interactive prompt)
+./scripts/new-post.sh --title "My Post Title" --lang ko --tags "개발,도구" --slug my-post
+./scripts/new-post.sh --title "My Post" --lang both   # creates -ko.md and -en.md
+```
+
+**Flags:**
+
+| Flag | Description | Default (if omitted) |
+|---|---|---|
+| `--title` | Post title | Interactive prompt |
+| `--lang` | `ko`, `en`, or `both` | Interactive prompt |
+| `--tags` | Comma-separated tags | Interactive prompt |
+| `--slug` | URL slug | Auto-derived from title (lowercase, spaces→hyphens, special chars stripped) |
+
+**Behavior:**
+1. Resolve all fields (from flags or prompts)
+2. Derive today's date (`YYYY-MM-DD`) automatically
+3. Construct filename(s): `_posts/YYYY-MM-DD-<slug>-<lang>.md`
+4. If file already exists → abort with error (never overwrite)
+5. Write file with front matter pre-filled:
+   ```yaml
+   ---
+   layout: post-ko
+   lang: ko
+   title: "<title>"
+   date: YYYY-MM-DD
+   tags: [tag1, tag2]
+   slug: <slug>
+   ---
+   ```
+6. If `--lang both`: create both `-ko.md` and `-en.md` with matching slug and appropriate layout per file
+7. Print the created file path(s) and open in `$EDITOR` (if set)
 
 ---
 
