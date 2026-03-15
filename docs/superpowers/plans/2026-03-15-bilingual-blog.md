@@ -147,7 +147,7 @@ exclude:
   - README.md
 ```
 
-> **Note on permalinks:** jekyll-polyglot automatically prepends the language code to non-default-language pages. So `permalink: /:year/:month/:day/:slug/` produces `/ko/2026/03/15/dev-tools/` for `lang: ko` posts. Do NOT add `:lang` to the permalink — polyglot handles that prefix. Verify this by inspecting `_site/` after the first build.
+> **Note on permalinks:** jekyll-polyglot substitutes `:lang` in the permalink with the active language code during each build pass, producing `/ko/` and `/en/` prefixes for all languages including the default. This ensures consistent namespacing across the site.
 
 - [ ] **Step 2: Verify config parses cleanly**
 
