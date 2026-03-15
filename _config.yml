@@ -1,0 +1,38 @@
+# _config.yml
+url: "https://jinunpark.github.io"
+baseurl: ""
+
+title: "jinunpark"
+description: "개발과 일상 / Dev & Life"
+
+# jekyll-polyglot
+languages: ["ko", "en"]
+default_lang: "ko"
+# docs/ excluded so spec/plan files don't appear in the built site
+exclude_from_localization: ["assets", "scripts", "hooks", "docs"]
+parallel_localization: false
+
+# Posts
+# jekyll-polyglot supports :lang in permalink — it substitutes the active language.
+# This ensures /ko/ prefix appears even for the default language.
+permalink: /:lang/:year/:month/:day/:slug/
+
+# Build
+markdown: kramdown
+highlighter: rouge
+kramdown:
+  input: GFM
+  syntax_highlighter: rouge
+
+plugins:
+  - jekyll-polyglot
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - "*.sh"
+  - hooks/
+  - scripts/
+  - docs/
+  - theme-preview.html
+  - README.md
