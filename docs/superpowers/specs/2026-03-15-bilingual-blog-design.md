@@ -14,42 +14,46 @@ A personal blog serving mixed content (technical + personal) in Korean and Engli
 ## Architecture
 
 ### Tech Stack
-- **Jekyll** with **jekyll-polyglot** plugin for i18n routing
+- **Jekyll** (Ruby 3.2) with **jekyll-polyglot** plugin for i18n routing
 - **GitHub Actions** for build + deploy (required because jekyll-polyglot is not supported by native GitHub Pages Jekyll)
 - Deployed to `gh-pages` branch → served at `jinunpark.github.io`
+- `Gemfile` and `Gemfile.lock` committed to repo for reproducible builds
 
 ### Directory Structure
 
 ```
 jinunpark.github.io/
 ├── _config.yml
+├── Gemfile
+├── Gemfile.lock
 ├── _layouts/
-│   ├── default-ko.html
-│   ├── default-en.html
-│   ├── post-ko.html
-│   ├── post-en.html
-│   ├── page-ko.html
-│   └── page-en.html
+│   ├── default-ko.html       # loads theme-ko.css; includes hreflang tags
+│   ├── default-en.html       # loads theme-en.css; includes hreflang tags
+│   ├── post-ko.html          # extends default-ko.html
+│   ├── post-en.html          # extends default-en.html
+│   ├── page-ko.html          # extends default-ko.html
+│   └── page-en.html          # extends default-en.html
 ├── _includes/
 │   ├── lang-switcher.html
 │   ├── header-ko.html
 │   └── header-en.html
 ├── _posts/
-│   ├── YYYY-MM-DD-slug.ko.md
-│   └── YYYY-MM-DD-slug.en.md   # optional translation
-├── about.ko.md                  # → /ko/about/
-├── about.en.md                  # → /en/about/
+│   ├── 2026-03-15-dev-tools-ko.md   # lang: ko, slug: dev-tools
+│   └── 2026-03-15-dev-tools-en.md   # lang: en, slug: dev-tools (optional)
+├── about.ko.md                       # → /ko/about/, slug: about
+├── about.en.md                       # → /en/about/, slug: about (optional)
 ├── assets/
 │   ├── css/
 │   │   ├── theme-ko.css
 │   │   └── theme-en.css
 │   └── js/
 │       └── lang-detect.js
-├── index.html                   # root redirect via lang-detect.js
+├── index.html                        # root: noscript fallback + JS redirect
+├── hooks/                            # committed hook scripts
+│   └── pre-commit                    # calls scripts/check-post.sh
 ├── scripts/
-│   └── check-post.sh            # pre-commit checker script
-├── .git/hooks/
-│   └── pre-commit               # calls check-post.sh
+│   ├── check-post.sh                 # pre-commit checker
+│   └── setup-hooks.sh               # run once after clone: sets core.hooksPath
 ├── .github/
 │   └── workflows/
 │       └── deploy.yml
@@ -61,39 +65,184 @@ jinunpark.github.io/
 
 ### Jekyll Config (`_config.yml`)
 
-Key polyglot settings:
 ```yaml
+url: "https://jinunpark.github.io"
+baseurl: ""
+permalink: /:lang/:year/:month/:day/:slug/
+
 languages: ["ko", "en"]
 default_lang: "ko"
-exclude_from_localization: ["assets", "scripts"]
+exclude_from_localization: ["assets", "scripts", "hooks"]
 parallel_localization: false
+
+plugins:
+  - jekyll-polyglot
 ```
+
+The `permalink` format uses `:slug` (the front matter `slug:` field, not the filename), which produces clean URLs without the `-ko` / `-en` filename suffix. For example, `2026-03-15-dev-tools-ko.md` with `slug: dev-tools` and `lang: ko` resolves to `/ko/2026/03/15/dev-tools/`.
+
+---
+
+## Content Model
+
+### How jekyll-polyglot Works
+jekyll-polyglot builds the site once per language. A post with `lang: ko` in front matter is included only in the Korean build (served under `/ko/`). A post with `lang: en` appears only under `/en/`.
+
+**Mono-lingual posts** (no `lang:` field): appear in all language builds at the same URL. These should use a language-neutral layout (e.g., `layout: post-ko` if the content is Korean) — the author is responsible for setting an appropriate layout. The pre-commit checker skips the filename suffix and layout/lang consistency checks for `lang:`-less posts, but does validate all other front matter fields.
+
+### Post Filenames
+Convention: `YYYY-MM-DD-title-lang.md`
+
+Examples:
+```
+_posts/2026-03-15-dev-tools-ko.md    # Korean post
+_posts/2026-03-15-dev-tools-en.md    # English translation (optional)
+```
+
+Two files cannot share the same filename — the `-ko`/`-en` suffix distinguishes them on the filesystem. The `slug:` front matter field controls the final URL (without the suffix) and is the translation key used by the switcher.
+
+### Post Front Matter
+```yaml
+---
+layout: post-ko          # must match lang: value (post-ko ↔ lang:ko, post-en ↔ lang:en)
+lang: ko
+title: "내가 매일 쓰는 개발 도구 모음"
+date: 2026-03-15
+tags: [개발, 도구]        # localized tags per language
+slug: dev-tools           # controls URL; shared with translation counterpart
+---
+```
+
+### Layout/Lang Consistency Rule
+When `lang:` is present, the `layout:` field must match:
+- `lang: ko` → `layout: post-ko` or `layout: page-ko`
+- `lang: en` → `layout: post-en` or `layout: page-en`
+
+Posts without `lang:` are exempt from this rule. The pre-commit checker enforces this — a mismatch blocks the commit.
+
+### Pages (About, etc.)
+```yaml
+---
+layout: page-ko
+lang: ko
+title: 소개
+slug: about              # required — used by switcher to find counterpart in site.pages
+permalink: /ko/about/
+---
+```
+
+If only one language version of a page exists, the switcher falls back to the other language's homepage.
+
+### Tags
+Tags are localized per language. Korean posts use Korean tags; English posts use English tags. No cross-language tag pages.
+
+**Tag page generation:** Tag index pages are generated by a custom Jekyll generator plugin (`_plugins/tag_generator.rb`). For each unique tag in a given language's build, it creates a page at `/ko/tags/<tag>/` or `/en/tags/<tag>/` listing all posts with that tag.
 
 ---
 
 ## Language Detection & Routing
 
 ### URL Namespacing
-- All Korean content under `/ko/` — e.g., `/ko/about/`, `/ko/2026/03/15/slug/`
-- All English content under `/en/` — e.g., `/en/about/`, `/en/2026/03/15/slug/`
-- Site root (`/`) contains only `index.html` which immediately redirects
+- Korean: `/ko/` prefix — e.g., `/ko/about/`, `/ko/2026/03/15/dev-tools/`
+- English: `/en/` prefix — e.g., `/en/about/`, `/en/2026/03/15/dev-tools/`
+- Root `/` contains only `index.html` for initial redirect
 
-### First Visit Detection (`lang-detect.js`)
-1. Check `localStorage` for `preferred_lang` key
-2. If found, redirect to `/<preferred_lang>/`
-3. If not found, read `navigator.language`
-4. If starts with `ko` → redirect to `/ko/`, else → redirect to `/en/`
-5. Store result in `localStorage`
+### Root `index.html`
+The root page runs `lang-detect.js` on load. For users without JavaScript, a `<noscript>` block renders links to both language homepages:
 
-### Language Switcher
-- Present in every page header (top-right)
-- If translation exists for current post → links directly to translated post
-- If no translation exists → links to the other language's homepage with tooltip: *"번역이 없습니다" / "No translation available"*
-- Clicking switcher updates `localStorage`
+```html
+<noscript>
+  <p>Choose your language: <a href="/ko/">한국어</a> | <a href="/en/">English</a></p>
+</noscript>
+```
+
+`index.html` also includes `hreflang` link tags:
+```html
+<link rel="alternate" hreflang="ko" href="https://jinunpark.github.io/ko/" />
+<link rel="alternate" hreflang="en" href="https://jinunpark.github.io/en/" />
+```
+
+### `lang-detect.js` Logic
+This script runs **only when included on the root `/` page**. Language-namespaced pages do not include this script.
+
+```
+1. Read localStorage["blog_preferred_lang"]
+2. If found → redirect to /<value>/
+3. If not found → read navigator.language
+4. If starts with "ko" → redirect to /ko/, else → redirect to /en/
+5. Store result in localStorage["blog_preferred_lang"]
+```
+
+The key `blog_preferred_lang` is namespaced to avoid collisions with other sites' localStorage entries.
+
+Without JavaScript, the user sees the `<noscript>` links and manually chooses — preference is not stored, but navigation still works fully.
+
+### Language Switcher (`lang-switcher.html`)
+Present in every page header (top-right corner).
+
+**Liquid logic to detect translation (searches both `site.posts` and `site.pages`):**
+```liquid
+{% assign current_slug = page.slug %}
+{% assign current_lang = page.lang %}
+{% assign target_lang = "en" %}
+{% if current_lang == "en" %}{% assign target_lang = "ko" %}{% endif %}
+
+{% assign translation = nil %}
+
+{% comment %} Search posts {% endcomment %}
+{% for p in site.posts %}
+  {% if p.slug == current_slug and p.lang == target_lang %}
+    {% assign translation = p %}
+    {% break %}
+  {% endif %}
+{% endfor %}
+
+{% comment %} If not found in posts, search pages {% endcomment %}
+{% if translation == nil %}
+  {% for p in site.pages %}
+    {% if p.slug == current_slug and p.lang == target_lang %}
+      {% assign translation = p %}
+      {% break %}
+    {% endif %}
+  {% endfor %}
+{% endif %}
+```
+
+- If `translation` found → render `<a href="{{ translation.url }}">` and update `localStorage["blog_preferred_lang"]` on click via an `onclick` handler
+- If `translation` nil → render a `<span>` styled as greyed-out with `title="번역이 없습니다"` / `title="No translation available"` and `style="pointer-events: none; opacity: 0.4"` (not clickable)
+- Without JS: the `<a>` link still navigates; only the `localStorage` update is skipped — preference is not persisted but switching works
+
+### `hreflang` Tags in Layouts
+Every layout (`default-ko.html`, `default-en.html`) includes `hreflang` link tags in `<head>`. The same Liquid translation-lookup logic from the switcher is reused:
+
+- If translation found: emit reciprocal `hreflang` tags for both languages
+- If no translation: emit only the self-referencing `hreflang` tag (`hreflang="{{ page.lang }}"`)
 
 ---
 
 ## Themes
+
+### CSS Loading
+Each layout hardcodes its own stylesheet:
+- `default-ko.html` → `<link rel="stylesheet" href="/assets/css/theme-ko.css">`
+- `default-en.html` → `<link rel="stylesheet" href="/assets/css/theme-en.css">`
+
+`assets/` is excluded from localization so CSS is served at a single path without language prefix.
+
+### Font Loading
+Fonts are loaded via Google Fonts `@import` at the top of each theme CSS file:
+
+```css
+/* theme-ko.css */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;600;700&family=Noto+Sans+KR:wght@400;500&display=swap');
+```
+
+```css
+/* theme-en.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=DM+Mono:ital,wght@0,400;0,500;1,400&display=swap');
+```
+
+System font stacks are declared as fallbacks in `font-family` declarations in case Google Fonts is unavailable.
 
 ### Korean Theme (`theme-ko.css`)
 | Property | Value |
@@ -101,8 +250,8 @@ parallel_localization: false
 | Background | `#faf8f5` (warm off-white) |
 | Text | `#1a1a1a` |
 | Accent | `#8b5e3c` (earthy brown) |
-| Body font | Noto Serif KR |
-| UI font | Noto Sans KR |
+| Body font | Noto Serif KR, serif |
+| UI font | Noto Sans KR, sans-serif |
 | Post list style | Card-style list, generous line-height |
 | Post max-width | ~780px |
 | Feel | Warm, editorial |
@@ -113,78 +262,68 @@ parallel_localization: false
 | Background | `#ffffff` |
 | Text | `#111111` |
 | Accent | `#2563eb` (blue) |
-| Body font | Inter |
-| Code font | DM Mono |
+| Body font | Inter, sans-serif |
+| Code font | DM Mono, monospace |
 | Post list style | Single-column minimal list |
 | Post max-width | ~680px |
 | Feel | Clean, minimal, developer-focused |
 
 ### Shared
 - Mobile-first responsive layout
-- Syntax highlighting for code blocks (Rouge)
+- Syntax highlighting via Rouge
 - Language switcher in header on every page
-
----
-
-## Content Model
-
-### Posts
-- Filename: `YYYY-MM-DD-slug.ko.md` / `YYYY-MM-DD-slug.en.md`
-- polyglot links files sharing the same slug as translation pairs
-- A post with only one language file appears only in that language's namespace
-- Front matter:
-  ```yaml
-  ---
-  layout: post-ko       # or post-en
-  lang: ko              # or en
-  title: "제목"
-  date: 2026-03-15
-  tags: [개발, 도구]
-  ---
-  ```
-
-### Pages (About, etc.)
-- Files: `about.ko.md`, `about.en.md` in repo root
-- URLs: `/ko/about/`, `/en/about/`
-- Front matter:
-  ```yaml
-  ---
-  layout: page-ko
-  lang: ko
-  title: 소개
-  permalink: /ko/about/
-  ---
-  ```
-- If only one language version exists, switcher falls back to other language's homepage
 
 ---
 
 ## Pre-commit Post Checker
 
-Script: `scripts/check-post.sh`, invoked by `.git/hooks/pre-commit` on every commit touching `_posts/` or `about.*.md`.
+### Distribution
+The `hooks/` directory is committed in the repo root. After cloning, run once:
+```bash
+bash scripts/setup-hooks.sh
+```
+This runs `git config core.hooksPath hooks`, pointing git to the committed hooks directory. The script also checks for `aspell` and prints an install reminder if missing (`brew install aspell` / `sudo apt install aspell`).
 
-| Check | KO | EN |
-|---|---|---|
-| Required front matter present (`title`, `date`, `lang`, `tags`) | ✓ | ✓ |
-| Filename matches `YYYY-MM-DD-slug.lang.md` format | ✓ | ✓ |
-| No broken local image references | ✓ | ✓ |
-| Spell check via `aspell` | — | ✓ |
+### Script: `scripts/check-post.sh`
+Runs on staged files in `_posts/` or matching `about.*.md`.
 
-On failure: checker prints a descriptive error and blocks the commit.
+| Check | KO | EN | `lang:`-less |
+|---|---|---|---|
+| Required front matter (`title`, `date`, `lang`, `tags`, `slug`) | ✓ | ✓ | ✓ (except `lang`) |
+| `layout:` matches `lang:` | ✓ | ✓ | skipped |
+| Filename ends in `-ko.md` for `lang:ko`, `-en.md` for `lang:en` | ✓ | ✓ | skipped |
+| No broken local image references | ✓ | ✓ | ✓ |
+| Spell check via `aspell` (skipped with warning if `aspell` not installed) | — | ✓ | — |
+
+On any failure: prints a descriptive error and exits with code 1, blocking the commit.
 
 ---
 
 ## Deployment (GitHub Actions)
 
-Workflow: `.github/workflows/deploy.yml`, triggers on push to `main`.
+File: `.github/workflows/deploy.yml`, triggers on push to `main`.
 
-Steps:
-1. Checkout repo
-2. Set up Ruby + bundle install (includes jekyll-polyglot)
-3. Run `bundle exec jekyll build`
-4. Deploy `_site/` to `gh-pages` branch using `peaceiris/actions-gh-pages`
+```yaml
+env:
+  JEKYLL_ENV: production
 
-Result: site live at `https://jinunpark.github.io`
+steps:
+  - uses: actions/checkout@v4
+  - uses: ruby/setup-ruby@v1
+    with:
+      ruby-version: '3.2'
+      bundler-cache: true        # uses Gemfile.lock for reproducible builds
+  - run: bundle exec jekyll build
+  - uses: peaceiris/actions-gh-pages@v3
+    with:
+      github_token: ${{ secrets.GITHUB_TOKEN }}   # built-in token, no extra setup
+      publish_dir: ./_site
+      publish_branch: gh-pages
+```
+
+`JEKYLL_ENV: production` ensures production-mode behavior for polyglot and any analytics snippets. The `gh-pages` branch is created automatically by `peaceiris/actions-gh-pages` on first deploy. GitHub Pages must be configured in repo Settings → Pages → Source: `gh-pages` branch.
+
+Note: `peaceiris/actions-gh-pages@v3` is pinned to a major version tag. For this personal blog this is acceptable. If stricter supply-chain security is needed in future, pin to a commit SHA.
 
 ---
 
@@ -194,4 +333,4 @@ Result: site live at `https://jinunpark.github.io`
 - Newsletter / subscription
 - Premium / gated content
 - Search functionality
-- Analytics (can be added later)
+- Analytics (can be added later as a script tag in layouts)
