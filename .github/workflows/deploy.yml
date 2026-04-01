@@ -29,6 +29,26 @@ jobs:
           ruby-version: '3.2'
           bundler-cache: true
 
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Download PlantUML JAR
+        run: |
+          curl -sSL \
+            https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar \
+            -o plantuml.jar
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 'lts/*'
+
+      - name: Install Mermaid CLI
+        run: npm install -g @mermaid-js/mermaid-cli
+
       - name: Build site
         run: bundle exec jekyll build
 
