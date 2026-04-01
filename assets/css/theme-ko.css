@@ -258,6 +258,77 @@ body {
   color: var(--text-muted);
 }
 
+/* ── Footnotes ── */
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
+.post-content sup {
+  font-size: 0.72em;
+  line-height: 1;
+  vertical-align: super;
+}
+
+.post-content .footnote {
+  color: var(--accent);
+  text-decoration: none;
+  font-weight: 500;
+  padding: 0 1px;
+}
+
+.post-content .footnote:hover { text-decoration: underline; }
+
+.footnotes {
+  font-family: var(--font-ui);
+  margin-top: 3em;
+  padding-top: 1.5em;
+  border-top: 1px solid var(--border);
+  font-size: 0.875em;
+  color: var(--text-muted);
+}
+
+.footnotes ol { padding-left: 1.5em; }
+
+.footnotes li {
+  margin-bottom: 0.6em;
+  line-height: 1.7;
+}
+
+.footnotes li p { margin-bottom: 0.2em; }
+
+.reversefootnote {
+  color: var(--accent);
+  text-decoration: none;
+  margin-left: 4px;
+}
+
+.reversefootnote:hover { text-decoration: underline; }
+
+/* ── Diagrams ── */
+.post-content .diagram {
+  margin: 1.8em 0;
+  text-align: center;
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 28px 20px;
+  overflow-x: auto;
+}
+
+.post-content .diagram svg {
+  max-width: 100%;
+  height: auto;
+}
+
+.post-content .diagram-label {
+  font-size: 11px;
+  color: #bbb;
+  font-family: var(--font-mono);
+  margin-top: 10px;
+  letter-spacing: 0.5px;
+}
+
 /* ── Responsive ── */
 @media (max-width: 600px) {
   .site-header__inner { height: 48px; }
