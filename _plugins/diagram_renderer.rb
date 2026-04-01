@@ -4,13 +4,11 @@ require 'open3'
 require 'tempfile'
 
 module DiagramRenderer
-  # Matches the exact HTML structure kramdown+rouge produces for fenced code blocks.
-  # The outer div class is "language-{type} highlighter-rouge".
+  # Matches what kramdown+rouge actually outputs for unknown languages (mermaid, plantuml).
+  # Rouge does not recognize these languages, so it emits a plain <pre><code> without
+  # the highlighter-rouge wrapper div.
   BLOCK_PATTERN = %r{
-    <div\ class="language-(mermaid|plantuml)\ highlighter-rouge">\s*
-    <div\ class="highlight">\s*
-    <pre\ class="highlight"><code>(.*?)</code></pre>\s*
-    </div>\s*</div>
+    <pre><code[^>]*\bclass="language-(mermaid|plantuml)\b[^"]*"[^>]*>(.*?)</code></pre>
   }mx
 
   def self.process(html)
@@ -28,7 +26,7 @@ module DiagramRenderer
     when 'plantuml' then render_plantuml(source)
     end
   rescue StandardError => e
-    warn "[DiagramRenderer] Failed to render #{type}: #{e.message}"
+    Jekyll.logger.warn "DiagramRenderer:", "Failed to render #{type}: #{e.message}"
     nil
   end
 
@@ -45,7 +43,7 @@ module DiagramRenderer
       cmd = ['mmdc', '-i', input.path, '-o', output.path]
       _stdout, stderr, status = Open3.capture3(*cmd)
       unless status.success?
-        warn "[DiagramRenderer] mmdc failed: #{stderr}"
+        Jekyll.logger.warn "DiagramRenderer:", "mmdc failed: #{stderr.strip}"
         return nil
       end
 
@@ -59,13 +57,13 @@ module DiagramRenderer
   def self.render_plantuml(source)
     jar = ENV.fetch('PLANTUML_JAR', File.join(Dir.pwd, 'plantuml.jar'))
     unless File.exist?(jar)
-      warn "[DiagramRenderer] plantuml.jar not found at #{jar} (set PLANTUML_JAR env var to override)"
+      Jekyll.logger.warn "DiagramRenderer:", "plantuml.jar not found at #{jar} (set PLANTUML_JAR env var to override)"
       return nil
     end
 
     svg, stderr, status = Open3.capture3('java', '-jar', jar, '-tsvg', '-pipe', stdin_data: source)
     unless status.success?
-      warn "[DiagramRenderer] plantuml failed: #{stderr}"
+      Jekyll.logger.warn "DiagramRenderer:", "plantuml failed: #{stderr.strip}"
       return nil
     end
 

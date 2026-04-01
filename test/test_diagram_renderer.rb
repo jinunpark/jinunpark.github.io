@@ -15,16 +15,16 @@ end
 require_relative '../_plugins/diagram_renderer'
 
 MERMAID_HTML = <<~HTML
-  <div class="language-mermaid highlighter-rouge"><div class="highlight"><pre class="highlight"><code>flowchart LR
+  <pre><code class="language-mermaid">flowchart LR
     A --&gt; B
-  </code></pre></div></div>
+  </code></pre>
 HTML
 
 PLANTUML_HTML = <<~HTML
-  <div class="language-plantuml highlighter-rouge"><div class="highlight"><pre class="highlight"><code>@startuml
+  <pre><code class="language-plantuml">@startuml
   Alice -&gt; Bob: Hello
   @enduml
-  </code></pre></div></div>
+  </code></pre>
 HTML
 
 FAKE_SVG = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 50"><text x="10" y="25">diagram</text></svg>'
@@ -88,7 +88,7 @@ class TestDiagramRenderer < Minitest::Test
   def test_process_leaves_block_unchanged_when_render_returns_nil
     DiagramRenderer.stub(:render_mermaid, nil) do
       result = DiagramRenderer.process(MERMAID_HTML)
-      assert_includes result, 'highlighter-rouge'
+      assert_includes result, 'language-mermaid'
     end
   end
 end
