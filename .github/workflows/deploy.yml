@@ -37,7 +37,7 @@ jobs:
 
       - name: Download PlantUML JAR
         run: |
-          curl -sSL \
+          curl -sSLf \
             https://github.com/plantuml/plantuml/releases/latest/download/plantuml.jar \
             -o plantuml.jar
 
