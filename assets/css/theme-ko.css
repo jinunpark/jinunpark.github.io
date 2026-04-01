@@ -324,7 +324,7 @@ html {
 .post-content .diagram-label {
   font-size: 11px;
   color: #bbb;
-  font-family: var(--font-mono);
+  font-family: 'DM Mono', 'Courier New', monospace;
   margin-top: 10px;
   letter-spacing: 0.5px;
 }
