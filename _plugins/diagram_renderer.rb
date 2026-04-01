@@ -7,10 +7,10 @@ module DiagramRenderer
   # Matches the exact HTML structure kramdown+rouge produces for fenced code blocks.
   # The outer div class is "language-{type} highlighter-rouge".
   BLOCK_PATTERN = %r{
-    <div\ class="language-(mermaid|plantuml)\ highlighter-rouge">
-    <div\ class="highlight">
-    <pre\ class="highlight"><code>(.*?)</code></pre>
-    </div></div>
+    <div\ class="language-(mermaid|plantuml)\ highlighter-rouge">\s*
+    <div\ class="highlight">\s*
+    <pre\ class="highlight"><code>(.*?)</code></pre>\s*
+    </div>\s*</div>
   }mx
 
   def self.process(html)
@@ -78,7 +78,7 @@ module DiagramRenderer
   end
 
   def self.tool_available?(name)
-    system("which #{name} > /dev/null 2>&1")
+    system('which', name, out: File::NULL, err: File::NULL)
   end
 end
 
