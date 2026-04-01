@@ -7,3 +7,7 @@ gem "webrick"  # required for Ruby 3.x dev server
 group :jekyll_plugins do
   gem "jekyll-polyglot"
 end
+
+group :test do
+  gem "minitest", "~> 5.0"
+end
