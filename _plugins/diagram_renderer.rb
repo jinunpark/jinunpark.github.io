@@ -47,7 +47,7 @@ module DiagramRenderer
         return nil
       end
 
-      File.read(output.path)
+      expand_viewbox(File.read(output.path))
     ensure
       input.unlink
       output.unlink
@@ -68,6 +68,18 @@ module DiagramRenderer
     end
 
     svg
+  end
+
+  def self.expand_viewbox(svg, pad = 10)
+    svg.sub(/(<svg\b[^>]*\sviewBox=")([^"]+)(")/i) do
+      parts = Regexp.last_match(2).split.map(&:to_f)
+      if parts.length == 4
+        x, y, w, h = parts
+        "#{Regexp.last_match(1)}#{x - pad} #{y - pad} #{w + pad * 2} #{h + pad * 2}#{Regexp.last_match(3)}"
+      else
+        Regexp.last_match(0)
+      end
+    end
   end
 
   def self.wrap(svg, type)

@@ -316,6 +316,10 @@ html {
   height: auto;
 }
 
+.post-content .diagram svg foreignObject {
+  overflow: visible;
+}
+
 .post-content .diagram-label {
   font-size: 11px;
   color: #bbb;
