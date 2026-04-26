@@ -1,6 +1,7 @@
 # _plugins/diagram_renderer.rb
 require 'cgi'
 require 'open3'
+require 'securerandom'
 require 'tempfile'
 
 module DiagramRenderer
@@ -84,6 +85,9 @@ module DiagramRenderer
 
   def self.wrap(svg, type)
     svg = svg.sub(/\A\s*<\?xml[^>]*\?>\s*/m, '').strip
+    unique_id = "diagram-#{type}-#{SecureRandom.hex(6)}"
+    svg = svg.gsub(/\bid="my-svg"/, %Q(id="#{unique_id}"))
+             .gsub(/#my-svg\b/, "##{unique_id}")
     %(<div class="diagram">#{svg}<p class="diagram-label">#{type}</p></div>)
   end
 
