@@ -4,8 +4,14 @@ lang: en
 title: About
 slug: about
 permalink: /about/
+date: 2026-04-26
+tags: about
 ---
 
 Hi, I'm Jinun Park.
 
-This is my blog where I write about development and everyday life.
+I'm a game server programmer with 14 years of experience.
+
+I like to discuss programming language like C++ or Java, low level issue like multi-threading issue, and distribute systems.
+
+LinkedIn: [https://www.linkedin.com/in/jinun-park](https://www.linkedin.com/in/jinun-park)
