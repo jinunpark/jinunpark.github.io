@@ -38,3 +38,4 @@ exclude:
   - docs/
   - theme-preview.html
   - README.md
+  - puppeteer-config.json

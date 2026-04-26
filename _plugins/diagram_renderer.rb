@@ -42,6 +42,8 @@ module DiagramRenderer
       output.close
 
       cmd = ['mmdc', '-i', input.path, '-o', output.path]
+      puppeteer_cfg = File.join(Dir.pwd, 'puppeteer-config.json')
+      cmd += ['-p', puppeteer_cfg] if File.exist?(puppeteer_cfg)
       _stdout, stderr, status = Open3.capture3(*cmd)
       unless status.success?
         Jekyll.logger.warn "DiagramRenderer:", "mmdc failed: #{stderr.strip}"
