@@ -237,6 +237,8 @@ The first is simple: write a document anywhere, and it becomes searchable. You c
 
 The second is to manage relationships between documents. It means that marking which ideas are connected and improving search quality. The system can help, but deciding what a document means and how it connects to others is always a human call. Still, those relationships do pay off. They're what makes search better.
 
+See [*Adoption of Document Management System*](/en/2026/05/03/dms-ptbmaf/) for a detailed proposal of how this system could be built.
+
 ## Game Design Review System
 
 Once the document management system makes existing docs searchable, you can use an LLM to check new design documents for contradictions or ambiguities with existing ones. The final review is still a human's job. But before it gets there, the author can use an LLM to improve readability and shrink the scope of what needs reviewing. In this system, the LLM checks fixed rules and format; humans judge the value of the content.
